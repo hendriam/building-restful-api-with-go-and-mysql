@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -16,10 +17,10 @@ type Database struct {
 }
 
 func LoadDatabase() (Database, error) {
-	dsn := "root:example@tcp(localhost:3307)/movie_db"
+	dsn := "root:@tcp(localhost:3306)/movie_db"
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		fmt.Println("[DATABASE] error =>", err)
+		log.Fatal("[DATABASE] error =>", err)
 		return Database{}, err
 	}
 

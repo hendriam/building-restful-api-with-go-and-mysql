@@ -3,9 +3,11 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
-	api "github.com/hendriam/movie-service/model/web"
+	"github.com/hendriam/movie-service/helper"
+	"github.com/hendriam/movie-service/model/web"
 	"github.com/hendriam/movie-service/service"
 )
 
@@ -18,25 +20,78 @@ func NewControllerMovie(movieService service.MovieService) MovieController {
 }
 
 func (controller *MovieController) Create(c *gin.Context) {
-	movieBody := api.MovieCreateRequestBody{}
-	if err := c.ShouldBindJSON(&movieBody); err != nil {
-		fmt.Println("[CONTROLLER] error =>", err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    http.StatusBadRequest,
-			"message": err.Error(),
-		})
+	requestBody := web.MovieCreateRequestBody{}
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		fmt.Println("[CONTROLLER][CREATE] error =>", err)
+		helper.ErrorResponse(c, http.StatusBadRequest, err)
 		return
 	}
 
-	movieResponse, err := controller.movieService.CreateMovie(c.Request.Context(), movieBody)
+	createResponse, err := controller.movieService.Create(c.Request.Context(), requestBody)
 	if err != nil {
-		fmt.Println("[CONTROLLER] error =>", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    http.StatusInternalServerError,
-			"message": err.Error(),
-		})
+		fmt.Println("[CONTROLLER][CREATE] error =>", err)
+		helper.ErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, movieResponse)
+	helper.SuccessResponse(c, http.StatusCreated, createResponse)
+}
+
+func (controller *MovieController) Update(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		fmt.Println("[CONTROLLER][UPDATE] error =>", err)
+		helper.ErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+
+	requestBody := web.MovieUpdateRequestBody{}
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		fmt.Println("[CONTROLLER][UPDATE] error =>", err)
+		helper.ErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+
+	// This step is a function to check whether updated data exists or not.
+	findById, err := controller.movieService.FindById(c.Request.Context(), id)
+	if err != nil {
+		fmt.Println("[CONTROLLER][FIND-BY-ID] error =>", err)
+		helper.ErrorResponse(c, http.StatusNotFound, err)
+		return
+	}
+
+	updateResponse, err := controller.movieService.Update(c.Request.Context(), requestBody, findById.ID)
+	if err != nil {
+		fmt.Println("[CONTROLLER][UPDATE] error =>", err)
+		helper.ErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, updateResponse)
+}
+
+func (controller *MovieController) Delete(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		fmt.Println("[CONTROLLER][DELETE] error =>", err)
+		helper.ErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+
+	// This step is a function to check whether delete data exists or not.
+	findById, err := controller.movieService.FindById(c.Request.Context(), id)
+	if err != nil {
+		fmt.Println("[CONTROLLER][FIND-BY-ID] error =>", err)
+		helper.ErrorResponse(c, http.StatusNotFound, err)
+		return
+	}
+
+	err = controller.movieService.Delete(c.Request.Context(), findById.ID)
+	if err != nil {
+		fmt.Println("[CONTROLLER][DELETE] error =>", err)
+		helper.ErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, findById)
 }

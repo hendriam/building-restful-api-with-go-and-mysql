@@ -30,6 +30,8 @@ func main() {
 	route := gin.Default()
 
 	route.POST("/create", movieController.Create)
+	route.PUT("/update/:id", movieController.Update)
+	route.DELETE("/delete/:id", movieController.Delete)
 
 	route.Run(url)
 }
