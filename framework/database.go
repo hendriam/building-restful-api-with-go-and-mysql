@@ -1,10 +1,8 @@
-package frameworks
+package framework
 
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"log"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -17,10 +15,12 @@ type Database struct {
 }
 
 func LoadDatabase() (Database, error) {
-	dsn := "root:@tcp(localhost:3306)/movie_db"
+	cfg := LoadConfig()
+	logging := LoadLogging()
+	dsn := cfg.Database.MySQL.Dsn
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatal("[DATABASE] error =>", err)
+		logging.Error().Msgf("[Database] failed connected %v", err)
 		return Database{}, err
 	}
 
@@ -29,9 +29,11 @@ func LoadDatabase() (Database, error) {
 
 	err = db.PingContext(ctx)
 	if err != nil {
-		fmt.Println("[DATABASE PING] error =>", err)
+		logging.Error().Msgf("[Database] ping error %v", err)
 		return Database{}, err
 	}
+
+	logging.Info().Msgf("[Database] success connected")
 
 	return Database{db}, nil
 }

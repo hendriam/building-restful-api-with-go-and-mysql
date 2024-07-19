@@ -5,33 +5,35 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hendriam/movie-service/controller"
-	frameworks "github.com/hendriam/movie-service/framework"
+	"github.com/hendriam/movie-service/framework"
 	"github.com/hendriam/movie-service/repository"
 	"github.com/hendriam/movie-service/service"
 )
 
 func main() {
-	db, err := frameworks.LoadDatabase()
+	cfg := framework.LoadConfig()
+	logging := framework.LoadLogging()
+	db, err := framework.LoadDatabase()
 	if err != nil {
 		panic(err)
 	}
 
 	movieRepository := repository.NewMovieRepository(db)
 	movieService := service.NewMovieService(movieRepository)
-	movieController := controller.NewControllerMovie(movieService)
+	movieController := controller.NewControllerMovie(movieService, logging)
 
-	host := "localhost"
-	port := 8080
-	url := fmt.Sprintf("%s:%d", host, port)
+	url := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 
-	fmt.Println("[APP] Started at => ", url)
+	logging.Info().Msgf("starting web server at http://%s/", url)
 
 	gin.SetMode(gin.ReleaseMode)
 	route := gin.Default()
 
-	route.POST("/create", movieController.Create)
-	route.PUT("/update/:id", movieController.Update)
-	route.DELETE("/delete/:id", movieController.Delete)
+	route.POST("movie/create", movieController.Create)
+	route.PUT("movie/update/:id", movieController.Update)
+	route.DELETE("movie/delete/:id", movieController.Delete)
+	route.GET("movie/:id", movieController.FindById)
+	route.GET("movie", movieController.FindAll)
 
 	route.Run(url)
 }

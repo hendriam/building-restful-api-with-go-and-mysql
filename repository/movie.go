@@ -67,7 +67,7 @@ func (repository *MovieRepository) Delete(ctx context.Context, movieId int) erro
 	return nil
 }
 
-func (repository *MovieRepository) FindById(ctx context.Context, movieId int) (domain.Movie, error) {
+func (repository *MovieRepository) SelectById(ctx context.Context, movieId int) (domain.Movie, error) {
 	movie := domain.Movie{}
 	err := repository.db.QueryRowContext(
 		ctx,
@@ -79,4 +79,27 @@ func (repository *MovieRepository) FindById(ctx context.Context, movieId int) (d
 	}
 
 	return movie, nil
+}
+
+func (repository *MovieRepository) SelectAll(ctx context.Context) ([]domain.Movie, error) {
+	movies := []domain.Movie{}
+	rows, err := repository.db.QueryContext(ctx, "SELECT * FROM movies")
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var movie domain.Movie
+		if err := rows.Scan(
+			&movie.ID,
+			&movie.Title,
+			&movie.Year,
+		); nil != err {
+			return nil, err
+		}
+
+		movies = append(movies, movie)
+	}
+
+	return movies, nil
 }

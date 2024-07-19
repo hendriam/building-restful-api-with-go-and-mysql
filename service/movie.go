@@ -54,10 +54,19 @@ func (service *MovieService) Delete(ctx context.Context, movieId int) error {
 	return nil
 }
 
-func (service *MovieService) FindById(ctx context.Context, movieId int) (domain.Movie, error) {
-	responseFindId, err := service.movieRepository.FindById(ctx, movieId)
+func (service *MovieService) ReadById(ctx context.Context, movieId int) (domain.Movie, error) {
+	responseFindId, err := service.movieRepository.SelectById(ctx, movieId)
 	if err != nil {
 		return responseFindId, err
+	}
+
+	return responseFindId, nil
+}
+
+func (service *MovieService) ReadAll(ctx context.Context) ([]domain.Movie, error) {
+	responseFindId, err := service.movieRepository.SelectAll(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	return responseFindId, nil
