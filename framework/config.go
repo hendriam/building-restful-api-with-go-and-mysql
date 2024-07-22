@@ -1,6 +1,7 @@
 package framework
 
 import (
+	"os"
 	"strconv"
 )
 
@@ -27,18 +28,16 @@ func LoadConfig() Config {
 			Host string
 			Port int
 		}{
-			Host: "0.0.0.0",
-			Port: toInt("8080"),
+			Host: os.Getenv("HOST"),
+			Port: toInt(os.Getenv("PORT")),
 		},
 		Database: struct{ MySQL struct{ Dsn string } }{
 			MySQL: struct{ Dsn string }{
-				// Dsn: os.Getenv("DATABASE_MYSQL_DSN"),
-				Dsn: "root:@tcp(localhost:3306)/movie_db",
+				Dsn: os.Getenv("DATABASE_MYSQL_DSN"),
 			},
 		},
 		Log: struct{ Level string }{
-			// Level: os.Getenv("LOG_LEVEL"),
-			Level: "info",
+			Level: os.Getenv("LOG_LEVEL"),
 		},
 	}
 }

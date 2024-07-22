@@ -1,0 +1,18 @@
+version: "3"
+services:
+  app:
+    container_name: movie-service-go
+    build: .
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+      - DATABASE_MYSQL_DSN=root:example@tcp(mysql8:3306)/movie_db
+      - LOG_LEVEL=INFO
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+networks:
+  default:
+    external: true
+    name: local
