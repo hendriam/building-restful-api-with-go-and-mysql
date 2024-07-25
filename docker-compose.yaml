@@ -6,7 +6,7 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=8080
-      - DATABASE_MYSQL_DSN=root:example@tcp(mysql8:3306)/movie_db
+      - DATABASE_MYSQL_DSN=root:root@tcp({host/container_name}:3306)/movie_db
       - LOG_LEVEL=INFO
     expose:
       - 8080
